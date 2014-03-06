@@ -1,0 +1,301 @@
+{
+  var p, parser, vfls; 
+
+  p = parser = this;
+
+  vfls = [];
+  
+  p.addVFL = function (vfl) {
+    vfls.push(vfl);
+  }
+
+  p.getResults = function () {
+    return vfls;
+  };
+
+  parser.error = function (m,l,c) {
+    if (!!l && !!c) {
+      m = m + " {line:" + l + ", col:" + c + "}";
+    }
+    console.error(m);
+    return m;
+  };
+
+  p.trim = function (x) {
+    if (typeof x === "string") {return x.trim();}
+    if (x instanceof Array) {return x.join("").trim();}
+    return ""
+  };
+  
+}
+
+start
+  = __ Statement* __ {return p.getResults()}
+
+Statement
+  = "@" vfls:VGLStatement EOS __ { return vfls; }
+
+VGLStatement
+  = Rows
+
+Rows
+  = ("rows"/"-gss-rows") __ '"' '"' __ stuff:AnyChar* {
+    var vfl = "@v" + " " + p.trim(stuff);
+    p.addVFL(vfl);
+  }
+
+VFLStatement
+  = d:Dimension __ head:View
+    tail:(__ Connection? __ View)* __ o:Options? {
+      var connection, view2, result, ccss, headView, chainedViews;      
+      result = head;      
+      headView = head.view;
+      chainedViews = [];      
+      if (headView !== "|") {chainedViews.push(headView);}
+      parser.addPreds(headView,head.preds,d);      
+      for (var i = 0; i < tail.length; i++) {        
+        connection = tail[i][1];
+        view2 = tail[i][3].view;
+        if (view2 !== "|") {chainedViews.push(view2);}
+        parser.addPreds(view2,tail[i][3].preds,d);
+        result = [
+          //"c",
+          connection,
+          result,
+          view2
+        ];
+        ccss = p.getLeftVar(headView, d, o) + " " 
+          + p.getConnectionString(connection, d, o) + " " 
+          + p.getRightVar(view2, d, o)   
+          + p.getTrailingOptions(o)
+          + p.getSW(o);
+        parser.addC(
+          ccss.trim()
+        );
+        headView = view2;
+      }
+      parser.addChains(chainedViews,o);
+      return {'vfl':d, o:o};
+    }
+  / VFLPluralStatement
+
+VFLPluralStatement
+ = d:Dimension __ selector:NameChars+ __ o:Options? __ s:StrengthAndWeight? {
+   var ccss = "@chain ";
+   selector = selector.join("").trim();   
+   ccss += selector + " ";
+   ccss += p.leftVarNames[d] + "(";
+   if (!o) {o = {};}
+   if (o.gap) {
+     ccss += "+" + o.gap;
+   }
+   ccss += ")" + p.rightVarNames[d];
+   if (o.chains) {
+     o.chains.forEach( function (chain) {
+        ccss += " " + chain[0] + "("; 
+        if (chain[1].raw) {
+          ccss += chain[1].raw;
+        }
+        ccss += ")";
+       });
+   }
+   ccss += p.getTrailingOptions(o);
+   ccss += p.getSW(o);
+   parser.addC(ccss.trim());
+   return {vfl:d,o:o}
+ }
+
+Dimension
+  = ("@horizontal" / "@-gss-horizontal" / "@-gss-h") {return 0;}
+  / ("@vertical" / "@-gss-vertical" / "@-gss-v") {return 1;}
+
+
+Options
+  = os:Option+  {
+    var obj = {};
+    obj.chains = [];
+    for (var i = 0; i < os.length; i++) {          
+      // proccess chains
+      if (!!os[i].chain) {
+        obj.chains.push(os[i].chain);
+      }
+      // or just add option
+      else {
+        obj[os[i].key] = os[i].value;
+      }            
+    }
+    return obj;
+  }
+
+Option 'Option'
+  = __ chain:Chain { return chain; }
+  / __ key:NameChars+ "(" value:OpionValueChars+ ")" {return {key:key.join(''), value:value.join('')};}
+  / __ sw:StrengthAndWeight {return {key:"sw",value:sw}; }
+
+OpionValueChars
+  = [^>=<!)]
+
+Chain 'Chain'
+  = "chain-" prop:NameChars+ preds:ChainPredicate? { return {'chain':[prop.join(""),preds]};}
+
+ChainPredicate 'ChainPredicate'
+  = "(" items:ChainPredicateItems+ ")" {
+    items.raw = "";
+    items.forEach( function (item){
+      items.raw += item.raw;
+    });
+    return items;
+  }
+  / "()" {return {raw:""};}
+
+
+ChainPredicateItems
+  = item:ChainPredicateItem _? ","? {
+    item.raw = item.headEq + item.value + item.tailEq + item.s;
+    return item;
+  }
+
+// TODO: make more DRY... if all rules are optional sends parser into infinite loop
+ChainPredicateItem
+  = headEq:PredEq _  value:ChainPredVal? _? tailEq:PredEq? _? s:StrengthAndWeight? {
+      return {headEq:p.join(headEq),value:p.join(value),tailEq:p.join(tailEq),s:s};}
+  / headEq:PredEq? _? value:ChainPredVal _? tailEq:PredEq? _? s:StrengthAndWeight? {
+      return {headEq:p.join(headEq),value:p.join(value),tailEq:p.join(tailEq),s:s};}
+  / headEq:PredEq? _? value:ChainPredVal? _? tailEq:PredEq? _? s:StrengthAndWeight {
+      return {headEq:p.join(headEq),value:p.join(value),tailEq:p.join(tailEq),s:s};}
+
+ChainPredVal
+  = [^>=<!) ]+
+
+View
+  = "[" name:NameChars+ p:Predicate? "]"  {return {view:name.join(""),preds:p};}
+  / "|"                                   {return {view:"|"};}
+  // errorr 
+
+Predicate 'Predicate'
+  = "(" preds:(PredEq PredExpression StrengthAndWeight? _? PredSeperator _?)+ ")" {return preds;}
+
+PredExpression 
+  = (PredOp / PredLiteral / PredVariable / PredViewVariable / PredView )+
+
+PredEq
+  = _? eq:("==" / "<=" / "<" / ">=" / ">" / "=<"{return "<=";} / "=>"{return ">=";}) _?  {return eq;}
+
+PredOp 
+  = op:[+\-/*] _? {return op;}
+
+PredView
+  = name:NameChars+ _? {return ["view",name.join("")];}
+
+PredLiteral
+  = n:Number+ _? {return n.join("");}
+
+PredVariable
+  = "[" name:NameChars+ "]" _?  {return "[" + name.join("") + "]";}
+
+PredViewVariable
+  = view:NameChars+ "[" prop:NameChars+ "]" _?  {return view.join("") + "[" + prop.join("") + "]";}
+
+PredSeperator
+  = ","? {return "";}
+
+Connection
+  = "-" gap:GapChars+ "-"  {return {op:"==",gap:gap.join("")};}
+  / "-"                    {return {op:"==",gap:"__STANDARD__"};}
+  / "~" gap:GapChars+ "~"  {return {op:"<=",gap:gap.join("")};}
+  / "~" "-" "~"            {return {op:"<=",gap:"__STANDARD__"};}
+  / "~"                    {return {op:"<="};}
+  / ""                     {return {op:"=="};}
+
+GapChars 
+  = [a-zA-Z0-9#._$]
+
+  
+StrengthAndWeight
+  = "!" s:([a-zA-Z]+)? w:([0-9]+)? { 
+    var val;
+    val = "!" + p.join(s) + p.join(w);
+    return val.trim();
+  }
+  / "!" .? {return parser.error("Invalid Strength or Weight",line,column);}
+
+Strength
+  = ("require"  / "REQUIRE"  / "Require")  {return "require";}
+  / ("strong"   / "STRONG"   / "Strong")   {return "strong";}
+  / ("medium"   / "MEDIUM"   / "Medium")   {return "medium";}
+  / ("weak"     / "WEAK"     / "Weak")     {return "weak";}
+  / ("required" / "REQUIRED" / "Required") {return "require";}
+  
+NameChars
+  = [a-zA-Z0-9#.\-_$:]
+
+NameCharsWithSpace
+  = NameChars / " "
+
+Literal
+  = val:Number {
+    return [ "number",
+      val
+    ];
+  }
+
+Number
+  = Real / Integer
+
+Integer
+  = digits:[0-9]+ {
+    return parseInt(digits.join(""), 10);
+  }
+
+Real
+  = digits:(Integer "." Integer) {
+    return parseFloat(digits.join(""));
+  }
+
+SignedInteger
+  = [-+]? [0-9]+
+
+SourceCharacter
+  = .
+
+WhiteSpace "whitespace"
+  = [\t\v\f \u00A0\uFEFF]
+
+LineTerminator
+  = [\n\r\u2028\u2029]
+
+LineTerminatorSequence "end of line"
+  = "\n"
+  / "\r\n"
+  / "\r"
+  / "\u2028" // line separator
+  / "\u2029" // paragraph separator
+
+AnyChar
+  = [a-zA-Z0-9 .,#:+?!^=()_\-$*/\\""']
+
+EOS
+  = __ ";"
+  / _ LineTerminatorSequence
+  / __ EOF
+
+EOF
+  = !.
+
+Comment "comment"
+  = MultiLineComment
+  / SingleLineComment
+
+MultiLineComment
+  = "/*" (!"*/" SourceCharacter)* "*/"
+
+MultiLineCommentNoLineTerminator
+  = "/*" (!("*/" / LineTerminator) SourceCharacter)* "*/"
+
+SingleLineComment
+  = "//" (!LineTerminator SourceCharacter)* (LineTerminator / EOF)
+_
+  = (WhiteSpace / MultiLineCommentNoLineTerminator / SingleLineComment)*
+
+__
+  = (WhiteSpace / LineTerminatorSequence / Comment)*
