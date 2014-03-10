@@ -13,7 +13,6 @@
     }
   ],
   "dependencies": {
-    "ccss-compiler": "*"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
