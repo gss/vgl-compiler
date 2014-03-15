@@ -212,7 +212,7 @@
     });    
 
     cols.forEach(function(col){
-      var curr, currspan, prev, vStr, heights, i;
+      var curr, currspan, prev, vStr, heights, i, v;
       v = [];            
       currspan = 0;
       prev = null;
@@ -293,7 +293,7 @@ VGLStatement
 RowsCols "grid-rows / grid-cols"
   = ("grid-"/"-gss-grid-") d:RowColDimension __ '"' line:Line '"' __ stuff:AnyChar* 
   {
-    var vfl, props;
+    var vfl, props, size;
     size = ['width','height']
     vfl = "@"+ ['v','h'][d] +" "+ 
       line +" "+

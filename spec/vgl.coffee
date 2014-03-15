@@ -210,7 +210,7 @@ describe 'VGL-to-CCSS Compiler', ->
   #  
   #  .gallery {
   #    
-  #    @grid-template-large "11122334" gap([gap]) chain-width([grid-unit-x]) chain-height([grid-unit-y]);
+  #    @grid-template large "11122334" gap([gap]) chain-width([grid-unit-x]) chain-height([grid-unit-y]);
   #    
   #    @grid-template-small "111"
   #                         "234";
