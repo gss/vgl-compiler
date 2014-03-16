@@ -2,6 +2,9 @@
   var p, parser, vfls, virtuals, ccss, asts; 
 
   p = parser = this;
+  
+  p.size = ['width','height'];
+  p.pos = ['x','y'];
 
   p.getResults = function () {
     var _ccss = virtuals.sort().join(" ");
@@ -293,13 +296,13 @@ VGLStatement
 RowsCols "grid-rows / grid-cols"
   = ("grid-"/"-gss-grid-") d:RowColDimension __ '"' line:Line '"' __ stuff:AnyChar* 
   {
-    var vfl, props, size;
-    size = ['width','height']
+    var vfl, props;
     vfl = "@"+ ['v','h'][d] +" "+ 
       line +" "+
       "in"+"(::)" +" "+ 
-      "chain-"+size[d]+"(::["+size[d] +"]) "+       
-      "chain-"+size[1-d] +" "+
+      "chain-"+p.size[d]+"(::["+p.size[d] +"]) "+       
+      "chain-"+p.size[1-d] +" "+
+      "chain-"+p.pos[d]+"(::["+p.pos[d] +"]) "+
       p.trim(stuff);
     p.addVFL(vfl.trim());
   }

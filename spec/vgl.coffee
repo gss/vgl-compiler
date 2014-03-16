@@ -39,8 +39,8 @@ describe 'VGL-to-CCSS Compiler', ->
             '@virtual "A" "B" "C" "score12" "title"'
           ]
           vfl: [
-            '@v |["A"]["B"]["C"]| in(::) chain-width(::[width]) chain-height'
-            '@h |["title"]["score12"]| in(::) chain-height(::[height]) chain-width'
+            '@v |["A"]["B"]["C"]| in(::) chain-width(::[width]) chain-height chain-x(::[x])'
+            '@h |["title"]["score12"]| in(::) chain-height(::[height]) chain-width chain-y(::[y])'
           ]
     
     parse """
@@ -52,8 +52,8 @@ describe 'VGL-to-CCSS Compiler', ->
             '@virtual "A" "B" "C" "col3"'
           ]
           vfl: [
-            '@v |-["A"]~-~["B"]-["C"]~| in(::) chain-width(::[width]) chain-height gap([gap]) !strong'
-            '@h |-100-["col3"]~-~| in(::) chain-height(::[height]) chain-width'
+            '@v |-["A"]~-~["B"]-["C"]~| in(::) chain-width(::[width]) chain-height chain-x(::[x]) gap([gap]) !strong'
+            '@h |-100-["col3"]~-~| in(::) chain-height(::[height]) chain-width chain-y(::[y])'
           ]
           
     parse """
@@ -64,7 +64,7 @@ describe 'VGL-to-CCSS Compiler', ->
             '@virtual "Controls" "Girls" "Score" "Title"' # alphabetical
           ]
           vfl: [
-            '@v |-["Title"]~-~["Score"]-["Girls"]~["Controls"]~| in(::) chain-width(::[width]) chain-height gap([gap])'
+            '@v |-["Title"]~-~["Score"]-["Girls"]~["Controls"]~| in(::) chain-width(::[width]) chain-height chain-x(::[x]) gap([gap])'
           ]
   
   
