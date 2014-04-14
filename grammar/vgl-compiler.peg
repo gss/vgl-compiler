@@ -55,9 +55,9 @@
   }
 
 
-   p.addTemplate = function (lines,name,options) {
+  p.addTemplate = function (lines,name,options) {
     var ast, prefix, container;
-        
+    
     prefix = name+'-';
     ast = p.processHLines(lines);
     ast.name = name;
@@ -69,14 +69,66 @@
       container = "::";
     }
 
-    var md, mdOp, outergap;
+    var md, mdOp, outergap, gaps, g, hasGap;
     
-    if (options.gap || options['outer-gap']) {
-      if (options['outer-gap']) {
-        outergap = options['outer-gap'];
-      } else {
-        outergap = options.gap;
-      }
+    gaps = {};
+    hasGap = false;
+    
+    g = options.gap;
+    if (g) { 
+      hasGap = true;
+      gaps.top = g;
+      gaps.right = g;
+      gaps.bottom = g;
+      gaps.left = g;
+      gaps.h = g;
+      gaps.v = g;
+    }
+    g = options['outer-gap'];
+    if (g) { 
+      hasGap = true;
+      gaps.top = g;
+      gaps.right = g;
+      gaps.bottom = g;
+      gaps.left = g;
+    }
+    g = options['h-gap'];
+    if (g) { 
+      hasGap = true;
+      gaps.right = g;
+      gaps.left = g;
+      gaps.h = g;
+    }
+    g = options['v-gap'];
+    if (g) { 
+      hasGap = true;
+      gaps.top = g;
+      gaps.bottom = g;
+      gaps.v = g;
+    }
+    g = options['top-gap'];
+    if (g) { 
+      hasGap = true;
+      gaps.top = g;
+    }
+    g = options['right-gap']; 
+    if (g) { 
+      hasGap = true;
+      gaps.right = g;
+    }
+    g = options['bottom-gap']; 
+    if (g) { 
+      hasGap = true;
+      gaps.bottom = g;
+    }
+    g = options['left-gap']; 
+    if (g) { 
+      hasGap = true;
+      gaps.left = g;
+    }
+    
+    
+    if (hasGap) {
       mdOp = "<=";
     } else {
       mdOp = "==";
@@ -118,18 +170,18 @@
     ast.v.forEach(function(brij){
       brij = brij.split("%-v-%");
       vfl = '@v ["'+prefix+brij[0]+'"]';
-      if (options.gap) {vfl += '-';}
+      if (gaps.v) {vfl += '-';}
       vfl += '["'+prefix+brij[1]+'"]';
-      if (options.gap) {vfl += ' gap('+options.gap+')';}
+      if (gaps.v) {vfl += ' gap('+gaps.v+')';}
       p.addVFL(vfl);
     });
    
     ast.h.forEach(function(brij){
       brij = brij.split("%-h-%");
       vfl = '@h ["'+prefix+brij[0]+'"]';
-      if (options.gap) {vfl += '-';}
+      if (gaps.h) {vfl += '-';}
       vfl += '["'+prefix+brij[1]+'"]';
-      if (options.gap) {vfl += ' gap('+options.gap+')';}
+      if (gaps.h) {vfl += ' gap('+gaps.h+')';}
       p.addVFL(vfl);
     });
     
@@ -140,9 +192,9 @@
       if (edgeEls.indexOf(el) > -1) {return null;}
       edgeEls.push(el);
       vfl = '@h |';
-      if (outergap) {vfl += '-';}
+      if (gaps.left) {vfl += '-';}
       vfl += '["'+prefix+el+'"]'+' in('+container+')';   
-      if (outergap) {vfl += ' gap('+outergap+')';}
+      if (gaps.left) {vfl += ' gap('+gaps.left+')';}
       p.addVFL(vfl);
     });
 
@@ -151,9 +203,9 @@
       if (edgeEls.indexOf(el) > -1) {return null;}
       edgeEls.push(el);
       vfl = '@v |';
-      if (outergap) {vfl += '-';}
+      if (gaps.top) {vfl += '-';}
       vfl += '["'+prefix+el+'"]'+' in('+container+')';
-      if (outergap) {vfl += ' gap('+outergap+')';}
+      if (gaps.top) {vfl += ' gap('+gaps.top+')';}
       p.addVFL(vfl);
     });
 
@@ -162,9 +214,9 @@
       if (edgeEls.indexOf(el) > -1) {return null;}
       edgeEls.push(el);
       vfl = '@h ["'+prefix+el+'"]';
-      if (outergap) {vfl += '-';}
+      if (gaps.right) {vfl += '-';}
       vfl +='|'+' in('+container+')';
-      if (outergap) {vfl += ' gap('+outergap+')';}
+      if (gaps.right) {vfl += ' gap('+gaps.right+')';}
       p.addVFL(vfl);
     });
 
@@ -173,9 +225,9 @@
       if (edgeEls.indexOf(el) > -1) {return null;}
       edgeEls.push(el);
       vfl = '@v ["'+prefix+el+'"]';
-      if (outergap) {vfl += '-';}
+      if (gaps.bottom) {vfl += '-';}
       vfl += '|'+' in('+container+')';
-      if (outergap) {vfl += ' gap('+outergap+')';}
+      if (gaps.bottom) {vfl += ' gap('+gaps.bottom+')';}
       p.addVFL(vfl);
     });
 

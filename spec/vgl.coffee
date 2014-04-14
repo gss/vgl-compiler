@@ -158,7 +158,7 @@ describe 'VGL-to-CCSS Compiler', ->
       parse """
               @grid-template 1 
                 "a"
-                "b" gap(100) outer-gap([grid-margin]); // w/ options
+                "b" gap(100) outer-gap([grid-margin]); // w/ gaps v.1
             """
           ,
             ccss: [
@@ -178,6 +178,56 @@ describe 'VGL-to-CCSS Compiler', ->
               "@h [\"1-a\"]-| in(::) gap([grid-margin])",
               "@h [\"1-b\"]-| in(::) gap([grid-margin])",
               "@v [\"1-b\"]-| in(::) gap([grid-margin])"
+            ]
+      
+      parse """
+              @grid-template 1 
+                "a"
+                "b" h-gap([h]) v-gap([v]) right-gap([r]); // w/ gaps v.2
+            """
+          ,
+            ccss: [
+              "@virtual \"1-a\" \"1-b\"",
+              "::[1-md-width] <= ::[width] !require",
+              "::[1-md-height] <= ::[height] / 2 !require",
+              "\"1-a\"[width] == ::[1-md-width]",
+              "\"1-b\"[width] == ::[1-md-width]",
+              "\"1-a\"[height] == ::[1-md-height]",
+              "\"1-b\"[height] == ::[1-md-height]"
+            ]
+            vfl: [
+              "@v [\"1-a\"]-[\"1-b\"] gap([v])",
+              "@h |-[\"1-a\"] in(::) gap([h])",
+              "@h |-[\"1-b\"] in(::) gap([h])",
+              "@v |-[\"1-a\"] in(::) gap([v])",
+              "@h [\"1-a\"]-| in(::) gap([r])",
+              "@h [\"1-b\"]-| in(::) gap([r])",
+              "@v [\"1-b\"]-| in(::) gap([v])"
+            ]
+            
+      parse """
+              @grid-template 1 
+                "a"
+                "b" top-gap(1) right-gap(2) bottom-gap(3) left-gap(4); // w/ gaps v.3
+            """
+          ,
+            ccss: [
+              "@virtual \"1-a\" \"1-b\"",
+              "::[1-md-width] <= ::[width] !require",
+              "::[1-md-height] <= ::[height] / 2 !require",
+              "\"1-a\"[width] == ::[1-md-width]",
+              "\"1-b\"[width] == ::[1-md-width]",
+              "\"1-a\"[height] == ::[1-md-height]",
+              "\"1-b\"[height] == ::[1-md-height]"
+            ]
+            vfl: [
+              "@v [\"1-a\"][\"1-b\"]",
+              "@h |-[\"1-a\"] in(::) gap(4)",
+              "@h |-[\"1-b\"] in(::) gap(4)",
+              "@v |-[\"1-a\"] in(::) gap(1)",
+              "@h [\"1-a\"]-| in(::) gap(2)",
+              "@h [\"1-b\"]-| in(::) gap(2)",
+              "@v [\"1-b\"]-| in(::) gap(3)"
             ]
                   
 
