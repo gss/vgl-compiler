@@ -30,6 +30,23 @@ describe 'VGL-to-CCSS Compiler', ->
   
   describe '/* Rows Cols */', ->
 
+    ###
+      - top-gap... outer-left-gap...
+      - in()
+    ###
+    
+    parse """    
+            @grid-cols "title - score12"
+              gap(12);
+          """
+        ,
+          ccss: [
+            '@virtual "score12" "title"'
+          ]
+          vfl: [
+            '@h |["title"]-["score12"]| in(::) chain-height(::[height]) chain-width chain-y(::[y]) gap(12)'
+          ]
+    
     parse """    
             @grid-rows "A B C";
             @grid-cols "title   score12"
@@ -66,6 +83,21 @@ describe 'VGL-to-CCSS Compiler', ->
           vfl: [
             '@v |-["Title"]~-~["Score"]-["Girls"]~["Controls"]~| in(::) chain-width(::[width]) chain-height chain-x(::[x]) gap([gap])'
           ]
+    
+    ###
+    parse """    
+            @grid-cols "col1 - col2"
+              chain-width(>= 1)
+              gap(12); // overwrite chain options
+          """
+        ,
+          ccss: [
+            '@virtual "col1" "col2"'
+          ]
+          vfl: [
+            '@h |["col1"]-["col2"]| in(::) chain-height(::[height]) chain-width(>= 1) chain-y(::[y]) gap(12)'
+          ]
+    ###
   
   
   # @grid-template
@@ -163,6 +195,64 @@ describe 'VGL-to-CCSS Compiler', ->
               "@h [\"nyt-4\"]| in(::)",
               "@h [\"nyt-5\"]| in(::)",
               "@v [\"nyt-5\"]| in(::)"
+            ]
+      
+      parse """
+              @grid-template dice 
+                "1.2"
+                ".3."
+                "4..";
+            """
+          ,
+            ccss: [
+              # alphabetical
+              '@virtual "dice-1" "dice-2" "dice-3" "dice-4" "dice-blank-1" "dice-blank-2" "dice-blank-3" "dice-blank-4" "dice-blank-5"' 
+              '::[dice-md-width] == ::[width] / 3 !require'
+              '::[dice-md-height] == ::[height] / 3 !require'
+              "\"dice-1\"[width] == ::[dice-md-width]"
+              "\"dice-blank-1\"[width] == ::[dice-md-width]"
+              "\"dice-2\"[width] == ::[dice-md-width]"
+              "\"dice-blank-2\"[width] == ::[dice-md-width]"
+              "\"dice-3\"[width] == ::[dice-md-width]"
+              "\"dice-blank-3\"[width] == ::[dice-md-width]"
+              "\"dice-4\"[width] == ::[dice-md-width]"
+              "\"dice-blank-4\"[width] == ::[dice-md-width]"
+              "\"dice-blank-5\"[width] == ::[dice-md-width]"
+              "\"dice-1\"[height] == ::[dice-md-height]",
+              "\"dice-blank-1\"[height] == ::[dice-md-height]",
+              "\"dice-2\"[height] == ::[dice-md-height]",
+              "\"dice-blank-2\"[height] == ::[dice-md-height]",
+              "\"dice-3\"[height] == ::[dice-md-height]",
+              "\"dice-blank-3\"[height] == ::[dice-md-height]",
+              "\"dice-4\"[height] == ::[dice-md-height]",
+              "\"dice-blank-4\"[height] == ::[dice-md-height]"
+              "\"dice-blank-5\"[height] == ::[dice-md-height]"
+            ]
+            vfl: [
+              "@v [\"dice-1\"][\"dice-blank-2\"]"
+              "@v [\"dice-blank-2\"][\"dice-4\"]"
+              "@v [\"dice-blank-1\"][\"dice-3\"]"
+              "@v [\"dice-3\"][\"dice-blank-4\"]"
+              "@v [\"dice-2\"][\"dice-blank-3\"]"
+              "@v [\"dice-blank-3\"][\"dice-blank-5\"]"
+              "@h [\"dice-1\"][\"dice-blank-1\"]"
+              "@h [\"dice-blank-1\"][\"dice-2\"]"
+              "@h [\"dice-blank-2\"][\"dice-3\"]"
+              "@h [\"dice-3\"][\"dice-blank-3\"]"
+              "@h [\"dice-4\"][\"dice-blank-4\"]"
+              "@h [\"dice-blank-4\"][\"dice-blank-5\"]"
+              "@h |[\"dice-1\"] in(::)",
+              "@h |[\"dice-blank-2\"] in(::)",
+              "@h |[\"dice-4\"] in(::)",
+              "@v |[\"dice-1\"] in(::)",
+              "@v |[\"dice-blank-1\"] in(::)",
+              "@v |[\"dice-2\"] in(::)",
+              "@h [\"dice-2\"]| in(::)",
+              "@h [\"dice-blank-3\"]| in(::)",
+              "@h [\"dice-blank-5\"]| in(::)",
+              "@v [\"dice-4\"]| in(::)"
+              "@v [\"dice-blank-4\"]| in(::)"
+              "@v [\"dice-blank-5\"]| in(::)"
             ]
   
   

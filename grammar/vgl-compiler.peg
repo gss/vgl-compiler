@@ -1,7 +1,14 @@
 {
-  var p, parser, vfls, virtuals, ccss, asts; 
+  var p, parser, vfls, virtuals, ccss, asts, blankCount; 
 
   p = parser = this;
+  
+  blankCount = 0;
+  
+  p.getBlankName = function () {
+    blankCount++;
+    return "blank-" + blankCount;
+  };
   
   p.size = ['width','height'];
   p.pos = ['x','y'];
@@ -170,13 +177,23 @@
   }
 
   p.processHZones = function (zones) {
-    var xspan, curr, prev, h, x, widths;
+    var xspan, curr, prev, h, x, widths,
+      dotCounter, isDot;
     xspan = 0;
     h = [];
     widths = {};
     x = [];
+    dotCounter = 0;    
     zones.forEach(function(zone){
+      isDot = false;
       curr = zone.name;
+      
+      // "." are each treated as an empty zone
+      if (curr === "-DOT-") {
+        isDot = false;
+        dotCounter++;
+        curr += dotCounter;
+      }
       x = x.concat(zone.x);
       delete zone.x;
       if (prev && prev !== curr) {   
@@ -341,9 +358,14 @@ OpionValueChars
 TemplateZone "Template Zone"
   = zone:( "0"+/"1"+/"2"+/"3"+/"4"+/"5"+/"6"+/"7"+/"8"+/"9"+
   / "a"+/"b"+/"c"+/"d"+/"e"+/"f"+"g"+/"h"+/"i"+"j"+/"k"+/"l"+"m"+/"n"+/"o"+"p"+/"q"+/"r"+"s"+/"t"+/"u"+"v"+/"w"+/"x"+"y"+/"z"+
-  / "A"+/"B"+/"C"+"D"+/"E"+/"F"+"G"+/"H"+/"I"+"J"+/"K"+/"L"+"M"+/"N"+/"O"+"P"+/"Q"+/"R"+"S"+/"T"+/"U"+"V"+/"W"+/"X"+"Y"+/"Z" ) 
+  / "A"+/"B"+/"C"+"D"+/"E"+/"F"+"G"+/"H"+/"I"+"J"+/"K"+/"L"+"M"+/"N"+/"O"+"P"+/"Q"+/"R"+"S"+/"T"+/"U"+"V"+/"W"+/"X"+"Y"+/"Z"+ ) 
   {
     return {xspan:zone.length,name:zone[0],x:zone};
+  }
+  / "." 
+  {
+    var name = p.getBlankName();
+    return {xspan:1,name:name,x:[name]};
   }
 
 
