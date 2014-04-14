@@ -130,6 +130,30 @@ describe 'VGL-to-CCSS Compiler', ->
               '@v ["simple-b"]| in(::)'
             ]
       
+      
+      parse """
+              @grid-template simple "ab" in("area"); // in()
+            """
+          ,
+            ccss: [
+              '@virtual "simple-a" "simple-b"'
+              '::[simple-md-width] == "area"[width] / 2 !require'
+              '::[simple-md-height] == "area"[height] !require'                
+              '"simple-a"[width] == ::[simple-md-width]'
+              '"simple-b"[width] == ::[simple-md-width]'
+              '"simple-a"[height] == ::[simple-md-height]'    
+              '"simple-b"[height] == ::[simple-md-height]'
+            ]
+            vfl: [
+              '@h ["simple-a"]["simple-b"]'
+              '@h |["simple-a"] in("area")'              
+              '@v |["simple-a"] in("area")'
+              '@v |["simple-b"] in("area")'
+              '@h ["simple-b"]| in("area")'
+              '@v ["simple-a"]| in("area")'
+              '@v ["simple-b"]| in("area")'
+            ]
+      
 
       parse """
               @grid-template 1 
@@ -155,6 +179,7 @@ describe 'VGL-to-CCSS Compiler', ->
               "@h [\"1-b\"]-| in(::) gap([grid-margin])",
               "@v [\"1-b\"]-| in(::) gap([grid-margin])"
             ]
+                  
 
       parse """
               @grid-template nyt 

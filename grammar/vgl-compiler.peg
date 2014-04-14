@@ -56,11 +56,18 @@
 
 
    p.addTemplate = function (lines,name,options) {
-    var ast, prefix;
+    var ast, prefix, container;
+        
     prefix = name+'-';
     ast = p.processHLines(lines);
     ast.name = name;
-       
+    
+    if (options.in) {
+      container = options.in;
+    }
+    else {
+      container = "::";
+    }
 
     var md, mdOp, outergap;
     
@@ -75,12 +82,16 @@
       mdOp = "==";
     }
      
-    md = '::['+name+'-md-width] '+mdOp+' ::[width]';
+    md = '::['+name+'-md-width] '+mdOp+' ';
+    md += container + '[width]';
+    
     if (ast.yspan > 1){md += ' / '+ast.yspan;}
     md += " !require";
     p.addCCSS(md);
   
-    md = '::['+name+'-md-height] '+mdOp+' ::[height]';
+    md = '::['+name+'-md-height] '+mdOp+' ';;
+    md += container + '[height]';
+    
     if (ast.xspan > 1){md += ' / '+ast.xspan;}
     md += " !require";
     p.addCCSS(md);
@@ -130,7 +141,7 @@
       edgeEls.push(el);
       vfl = '@h |';
       if (outergap) {vfl += '-';}
-      vfl += '["'+prefix+el+'"]'+' in(::)';   
+      vfl += '["'+prefix+el+'"]'+' in('+container+')';   
       if (outergap) {vfl += ' gap('+outergap+')';}
       p.addVFL(vfl);
     });
@@ -141,7 +152,7 @@
       edgeEls.push(el);
       vfl = '@v |';
       if (outergap) {vfl += '-';}
-      vfl += '["'+prefix+el+'"]'+' in(::)';
+      vfl += '["'+prefix+el+'"]'+' in('+container+')';
       if (outergap) {vfl += ' gap('+outergap+')';}
       p.addVFL(vfl);
     });
@@ -152,7 +163,7 @@
       edgeEls.push(el);
       vfl = '@h ["'+prefix+el+'"]';
       if (outergap) {vfl += '-';}
-      vfl +='|'+' in(::)';
+      vfl +='|'+' in('+container+')';
       if (outergap) {vfl += ' gap('+outergap+')';}
       p.addVFL(vfl);
     });
@@ -163,7 +174,7 @@
       edgeEls.push(el);
       vfl = '@v ["'+prefix+el+'"]';
       if (outergap) {vfl += '-';}
-      vfl += '|'+' in(::)';
+      vfl += '|'+' in('+container+')';
       if (outergap) {vfl += ' gap('+outergap+')';}
       p.addVFL(vfl);
     });
