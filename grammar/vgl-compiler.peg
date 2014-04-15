@@ -83,15 +83,7 @@
       gaps.left = g;
       gaps.h = g;
       gaps.v = g;
-    }
-    g = options['outer-gap'];
-    if (g) { 
-      hasGap = true;
-      gaps.top = g;
-      gaps.right = g;
-      gaps.bottom = g;
-      gaps.left = g;
-    }
+    }    
     g = options['h-gap'];
     if (g) { 
       hasGap = true;
@@ -105,6 +97,14 @@
       gaps.top = g;
       gaps.bottom = g;
       gaps.v = g;
+    }
+    g = options['outer-gap'];
+    if (g) { 
+      hasGap = true;
+      gaps.top = g;
+      gaps.right = g;
+      gaps.bottom = g;
+      gaps.left = g;
     }
     g = options['top-gap'];
     if (g) { 
@@ -133,37 +133,92 @@
     } else {
       mdOp = "==";
     }
-     
-    md = '::['+name+'-md-width] '+mdOp+' ';
-    md += container + '[width]';
     
-    if (ast.yspan > 1){md += ' / '+ast.yspan;}
+    
+    // md-width     
+    // -------------------------------------------------
+    // == (this[width] - gap.left - gap.right - gap * (span - 1)) / span
+    
+    md = '::['+name+'-md-width] ' + mdOp + ' ';
+    if (gaps.right || gaps.left || gaps.h) {
+      md += '(' + container + '[width]';
+      if (gaps.right) {md += ' - ' + gaps.right;}
+      if (gaps.left ) {md += ' - ' + gaps.left;}      
+      if (gaps.h && ast.yspan > 1){
+        md += ' - ' + gaps.h;
+        if (ast.yspan > 2) {md += ' * ' + (ast.yspan - 1);}
+      }
+      md += ')';
+    } else {
+      md += container + '[width]';
+    }
+    if (ast.yspan > 1){md += ' / ' + ast.yspan;}
     md += " !require";
     p.addCCSS(md);
+    
+    
+    // md-height
+    // -------------------------------------------------
   
-    md = '::['+name+'-md-height] '+mdOp+' ';;
-    md += container + '[height]';
-    
-    if (ast.xspan > 1){md += ' / '+ast.xspan;}
+    md = '::['+name+'-md-height] ' + mdOp + ' ';
+    if (gaps.top || gaps.bottom || gaps.v) {
+      md += '(' + container + '[height]';
+      if (gaps.top) {md += ' - ' + gaps.top;}
+      if (gaps.bottom ) {md += ' - ' + gaps.bottom;}
+      if (gaps.v && ast.xspan > 1){
+        md += ' - ' + gaps.v;
+        if (ast.xspan > 2) {md += ' * ' + (ast.xspan - 1);}
+      }
+      md += ')';
+    } else {
+      md += container + '[height]';
+    }    
+    if (ast.xspan > 1){md += ' / ' + ast.xspan;}
     md += " !require";
     p.addCCSS(md);
-      
+    
+    
+    // virtual widths
+    // -------------------------------------------------
+    // == md-width * span - gap * (span - 1)
+    
     var xspan, wccss;
     for (var el in ast.widths) {
-       p.addVirtual(prefix+el);
-       xspan = ast.widths[el];
-       wccss = '"'+prefix+el+'"[width] == ';
-       wccss +='::['+ast.name+'-md-width]';
-       if (xspan > 1) {wccss += ' * '+xspan;}
-       p.addCCSS(wccss)
+      p.addVirtual(prefix+el);
+      xspan = ast.widths[el];
+      wccss = '"'+prefix+el+'"[width] == ';
+      wccss +='::['+ast.name+'-md-width]';
+      if (xspan > 1) {
+        wccss += ' * ' + xspan;
+        if (gaps.h) {
+          wccss += ' + ' + gaps.h;
+          if (xspan > 2) {
+            wccss += ' * ' + (xspan - 1);
+          }
+        }
+      }
+      p.addCCSS(wccss)
     }
+    
+    
+    // virtual heights
+    // -------------------------------------------------
+    
     var yspan, hccss;
     for (var el in ast.heights) {
-       yspan = ast.heights[el];
-       hccss = '"'+prefix+el+'"[height] == ';
-       hccss +='::['+ast.name+'-md-height]';
-       if (yspan > 1) {hccss += ' * '+yspan;}
-       p.addCCSS(hccss);
+      yspan = ast.heights[el];
+      hccss = '"'+prefix+el+'"[height] == ';
+      hccss +='::['+ast.name+'-md-height]';
+      if (yspan > 1) {
+        hccss += ' * ' + yspan;
+        if (gaps.v) {
+          hccss += ' + ' + gaps.v;
+          if (yspan > 2) {
+            hccss += ' * ' + (yspan - 1);
+          }
+        }
+      }
+      p.addCCSS(hccss);
     }
 
     var vfl, vflFooter;

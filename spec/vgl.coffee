@@ -163,8 +163,8 @@ describe 'VGL-to-CCSS Compiler', ->
           ,
             ccss: [
               "@virtual \"1-a\" \"1-b\"",
-              "::[1-md-width] <= ::[width] !require",
-              "::[1-md-height] <= ::[height] / 2 !require",
+              "::[1-md-width] <= (::[width] - [grid-margin] - [grid-margin]) !require",
+              "::[1-md-height] <= (::[height] - [grid-margin] - [grid-margin] - 100) / 2 !require",
               "\"1-a\"[width] == ::[1-md-width]",
               "\"1-b\"[width] == ::[1-md-width]",
               "\"1-a\"[height] == ::[1-md-height]",
@@ -188,20 +188,20 @@ describe 'VGL-to-CCSS Compiler', ->
           ,
             ccss: [
               "@virtual \"1-a\" \"1-b\"",
-              "::[1-md-width] <= ::[width] !require",
-              "::[1-md-height] <= ::[height] / 2 !require",
+              "::[1-md-width] <= (::[width] - [r] - [h]) !require",
+              "::[1-md-height] <= (::[height] - [v] - [v] - [v]) / 2 !require",
               "\"1-a\"[width] == ::[1-md-width]",
               "\"1-b\"[width] == ::[1-md-width]",
               "\"1-a\"[height] == ::[1-md-height]",
               "\"1-b\"[height] == ::[1-md-height]"
             ]
             vfl: [
-              "@v [\"1-a\"]-[\"1-b\"] gap([v])",
-              "@h |-[\"1-a\"] in(::) gap([h])",
-              "@h |-[\"1-b\"] in(::) gap([h])",
-              "@v |-[\"1-a\"] in(::) gap([v])",
-              "@h [\"1-a\"]-| in(::) gap([r])",
-              "@h [\"1-b\"]-| in(::) gap([r])",
+              "@v [\"1-a\"]-[\"1-b\"] gap([v])"
+              "@h |-[\"1-a\"] in(::) gap([h])"
+              "@h |-[\"1-b\"] in(::) gap([h])"
+              "@v |-[\"1-a\"] in(::) gap([v])"
+              "@h [\"1-a\"]-| in(::) gap([r])"
+              "@h [\"1-b\"]-| in(::) gap([r])"
               "@v [\"1-b\"]-| in(::) gap([v])"
             ]
             
@@ -213,8 +213,8 @@ describe 'VGL-to-CCSS Compiler', ->
           ,
             ccss: [
               "@virtual \"1-a\" \"1-b\"",
-              "::[1-md-width] <= ::[width] !require",
-              "::[1-md-height] <= ::[height] / 2 !require",
+              "::[1-md-width] <= (::[width] - 2 - 4) !require",
+              "::[1-md-height] <= (::[height] - 1 - 3) / 2 !require",
               "\"1-a\"[width] == ::[1-md-width]",
               "\"1-b\"[width] == ::[1-md-width]",
               "\"1-a\"[height] == ::[1-md-height]",
@@ -228,6 +228,59 @@ describe 'VGL-to-CCSS Compiler', ->
               "@h [\"1-a\"]-| in(::) gap(2)",
               "@h [\"1-b\"]-| in(::) gap(2)",
               "@v [\"1-b\"]-| in(::) gap(3)"
+            ]
+      
+      parse """
+              @grid-template 1 
+                "a"
+                "a"
+                "a"
+                "b" gap(10) outer-gap(3); // w/ gaps
+            """
+          ,
+            ccss: [
+              "@virtual \"1-a\" \"1-b\"",
+              "::[1-md-width] <= (::[width] - 3 - 3) !require"
+              "::[1-md-height] <= (::[height] - 3 - 3 - 10 * 3) / 4 !require"
+              "\"1-a\"[width] == ::[1-md-width]"
+              "\"1-b\"[width] == ::[1-md-width]"
+              "\"1-a\"[height] == ::[1-md-height] * 3 + 10 * 2"
+              "\"1-b\"[height] == ::[1-md-height]"
+            ]
+            vfl: [
+              "@v [\"1-a\"]-[\"1-b\"] gap(10)",
+              "@h |-[\"1-a\"] in(::) gap(3)",
+              "@h |-[\"1-b\"] in(::) gap(3)",
+              "@v |-[\"1-a\"] in(::) gap(3)",
+              "@h [\"1-a\"]-| in(::) gap(3)",
+              "@h [\"1-b\"]-| in(::) gap(3)",
+              "@v [\"1-b\"]-| in(::) gap(3)"
+            ]
+            
+      
+      parse """
+              @grid-template 1 
+                "aaab"
+                h-gap(10) v-gap(10) outer-gap(3) in(::window); // w/ gaps
+            """
+          ,
+            ccss: [
+              "@virtual \"1-a\" \"1-b\""              
+              "::[1-md-width] <= (::window[width] - 3 - 3 - 10 * 3) / 4 !require"
+              "::[1-md-height] <= (::window[height] - 3 - 3) !require"
+              "\"1-a\"[width] == ::[1-md-width] * 3 + 10 * 2"
+              "\"1-b\"[width] == ::[1-md-width]"
+              "\"1-a\"[height] == ::[1-md-height]"
+              "\"1-b\"[height] == ::[1-md-height]"
+            ]
+            vfl: [
+              "@h [\"1-a\"]-[\"1-b\"] gap(10)",
+              "@h |-[\"1-a\"] in(::window) gap(3)",
+              "@v |-[\"1-a\"] in(::window) gap(3)",
+              "@v |-[\"1-b\"] in(::window) gap(3)",
+              "@h [\"1-b\"]-| in(::window) gap(3)"
+              "@v [\"1-a\"]-| in(::window) gap(3)",
+              "@v [\"1-b\"]-| in(::window) gap(3)"
             ]
                   
 
