@@ -6,8 +6,8 @@ module.exports = ->
     # Generate library from Peg grammar
     peg:
       fbp:
-        grammar: 'grammar/vgl-compiler.peg'
-        outputFile: 'lib/vgl-compiler.js'
+        src: 'grammar/vgl-compiler.peg'
+        dest: 'lib/vgl-compiler.js'
 
     # Build the browser Component
     component:

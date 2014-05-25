@@ -1,8 +1,8 @@
-if typeof process is 'object' and process.title is 'node'
+if window?
+  parser = require 'vgl-compiler/lib/vgl-compiler.js'
+else
   chai = require 'chai' unless chai
   parser = require '../lib/vgl-compiler'
-else
-  parser = require 'vgl-compiler/lib/vgl-compiler.js'
 
 parse = (source, expect) ->
   result = null
