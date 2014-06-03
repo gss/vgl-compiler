@@ -3,8 +3,11 @@
   "description": "Visual Grid Language compiler",
   "version": "0.0.5",
   "scripts": [
-    "lib/vgl-compiler.js",
-    "lib/compiler.js"
+    "lib/compiler.js",
+    "lib/parser.js"
   ],
+  "dependencies": {
+    "the-gss/error-reporter": "*"
+  },
   "main": "lib/compiler.js"
 }
