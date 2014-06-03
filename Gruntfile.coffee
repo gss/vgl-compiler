@@ -10,14 +10,12 @@ module.exports = ->
         dest: 'lib/vgl-compiler.js'
 
     # Build the browser Component
-    component:
-      install:
-        options:
-          action: 'install'
-    component_build:
+    componentbuild:
       'vgl-compiler':
-        output: './browser/'
-        config: './component.json'
+        options:
+          name: 'vgl-compiler'
+        src: '.'
+        dest: 'browser'
         scripts: true
         styles: false
 
@@ -61,7 +59,6 @@ module.exports = ->
       all: ['spec/runner.html']
 
   # Grunt plugins used for building
-  @loadNpmTasks 'grunt-component'
   @loadNpmTasks 'grunt-peg'
   @loadNpmTasks 'grunt-component-build'
   @loadNpmTasks 'grunt-contrib-uglify'
@@ -73,6 +70,6 @@ module.exports = ->
   @loadNpmTasks 'grunt-mocha-phantomjs'
   @loadNpmTasks 'grunt-contrib-watch'
 
-  @registerTask 'build', ['peg', 'component', 'component_build', 'uglify']
+  @registerTask 'build', ['peg', 'componentbuild', 'uglify']
   @registerTask 'test', ['build', 'jshint', 'coffee', 'cafemocha', 'mocha_phantomjs']
   @registerTask 'default', ['build']
