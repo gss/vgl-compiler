@@ -7,14 +7,17 @@ else
 {expect} = chai
 
 
-parse = (source, expectation) ->
-  result = null
+parse = (source, expectation, pending) ->
+  itFn = if pending then xit else it
+
   describe source, ->
-    it '✓ ok', ->
+    result = null
+
+    itFn '✓ ok', ->
       result = parser.parse source
       #console.log result
       expect(result).to.be.an 'object'
-    it '✓ matched', ->
+    itFn '✓ matched', ->
       # sort b/c order doesn't really matter
       for key, val of result
         if val.sort? then val.sort()
