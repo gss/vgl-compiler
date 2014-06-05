@@ -1,28 +1,55 @@
 if window?
-  parser = require 'vgl-compiler/lib/vgl-compiler.js'
+  parser = require 'vgl-compiler'
 else
   chai = require 'chai' unless chai
-  parser = require '../lib/vgl-compiler'
+  parser = require '../lib/compiler'
 
-parse = (source, expect) ->
-  result = null
+{expect} = chai
+
+
+parse = (source, expectation, pending) ->
+  itFn = if pending then xit else it
+
   describe source, ->
-    it '✓ ok', ->
+    result = null
+
+    itFn '✓ ok', ->
       result = parser.parse source
       #console.log result
-      chai.expect(result).to.be.an 'object'
-    it '✓ matched', ->
+      expect(result).to.be.an 'object'
+    itFn '✓ matched', ->
       # sort b/c order doesn't really matter
       for key, val of result
         if val.sort? then val.sort()
-      for key, val of expect
+      for key, val of expectation
         if val.sort? then val.sort()
-      chai.expect(result).to.eql expect
+      expect(result).to.eql expectation
+
+
+# Helper function for expecting errors to be thrown when parsing.
+#
+# @param source [String] VGL statements.
+# @param message [String] This should be provided when a rule exists to catch
+# invalid syntax, and omitted when an error is expected to be thrown by the PEG
+# parser.
+# @param pending [Boolean] Whether the spec should be treated as pending.
+#
+expectError = (source, message, pending) ->
+  itFn = if pending then xit else it
+
+  describe source, ->
+    predicate = 'should throw an error'
+    predicate = "#{predicate} with message: #{message}" if message?
+
+    itFn predicate, ->
+      exercise = -> parser.parse source
+      expect(exercise).to.throw Error, message
+
 
 describe 'VGL-to-CCSS Compiler', ->
   
   it 'should provide a parse method', ->
-    chai.expect(parser.parse).to.be.a 'function'
+    expect(parser.parse).to.be.a 'function'
 
 
   # @rows @cols
