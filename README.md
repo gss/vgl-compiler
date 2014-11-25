@@ -1,4 +1,4 @@
-VGL to VFL Compiler [![Build Status](https://travis-ci.org/the-gss/vfl-compiler.png?branch=master)](https://travis-ci.org/the-gss/vgl-compiler)
+VGL to VFL Compiler [![Build Status](https://travis-ci.org/gss/vfl-compiler.png?branch=master)](https://travis-ci.org/gss/vgl-compiler)
 =============
 
 This library compiles [GSS](http://gridstylesheets.org/)'s [Visual Grid Language](http://gridstylesheets.org/guides/vfl/) (VGL) statements into [GSS-flavored VFL](http://gridstylesheets.org/guides/ccss/) statements.
