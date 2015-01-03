@@ -1,7 +1,7 @@
 {
   "name": "vgl-compiler",
   "description": "Visual Grid Language compiler",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "scripts": [
     "lib/compiler.js",
     "lib/parser.js"
