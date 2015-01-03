@@ -4,12 +4,12 @@
   "version": "0.0.5",
   "repository": {
     "type": "git",
-    "url": "git://github.com/the-gss/vgl-compiler.git"
+    "url": "git://github.com/gss/vgl-compiler.git"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/the-gss/vgl-compiler/blob/master/LICENSE-MIT"
+      "url": "https://github.com/gss/vgl-compiler/blob/master/LICENSE-MIT"
     }
   ],
   "dependencies": {
